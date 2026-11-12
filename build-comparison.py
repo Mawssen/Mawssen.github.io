@@ -3,7 +3,7 @@ Run in this directory: python build-comparison.py
 Source: scikit-image camera.png, CC0 by Lav Varshney.
 """
 from pathlib import Path
-import hashlib, json
+import hashlib, json, itertools, math
 import numpy as np
 import scipy, PIL
 from PIL import Image
@@ -11,7 +11,7 @@ from scipy.linalg import svd
 
 ROOT = Path(__file__).resolve().parent
 SIZE = 256
-CHIS = [32, 24, 20, 16, 12, 10, 8, 6, 4]
+CHIS = [30, 28, 20, 16, 12, 10, 8, 6, 4]
 SOURCE = ROOT / 'camera-source.png'
 
 def tensorize(a):
@@ -20,13 +20,35 @@ def tensorize(a):
     permutation = [j for k in range(q) for j in (k, q+k)]
     return a.reshape([2]*(2*q)).transpose(permutation), permutation
 
-def tt_svd(a, chi):
+
+def matched_profile(chi, floor=None):
+ n=16;base=[1]+[min(chi,2**k,2**(n-k)) for k in range(1,n)]+[1]
+ if floor:base=[max(a,b) for a,b in zip(base,floor)]
+ count=lambda a:sum(2*l*r for l,r in zip(a[:-1],a[1:]))
+ target=512*math.ceil(count(base)/512)
+ if count(base)==target:return base,target
+ for radius in [4,8,16]:
+  best=None
+  for i,j in itertools.combinations(range(2,n-1),2):
+   for a in range(max(1, floor[i] if floor else 1,base[i]-radius),min(2**i,2**(n-i),chi+radius)+1):
+    for b in range(max(1, floor[j] if floor else 1,base[j]-radius),min(2**j,2**(n-j),chi+radius)+1):
+     trial=base.copy();trial[i]=a;trial[j]=b
+     if count(trial)!=target:continue
+     if any(trial[k]>2*trial[k-1] or trial[k-1]>2*trial[k] for k in range(1,n+1)):continue
+     score=(a-base[i])**2+(b-base[j])**2
+     if best is None or score<best[0]:best=(score,trial)
+  if best:return best[1],target
+ return None,target
+
+
+def tt_svd(a, chi, profile=None):
     t, permutation = tensorize(a)
     n = t.ndim
     remaining, left, cores = t, 1, []
     for k in range(n-1):
         u, s, vh = svd(remaining.reshape(left*2, -1), full_matrices=False, check_finite=False)
-        r = min(chi, len(s))
+        r = profile[k+1] if profile is not None else min(chi, len(s))
+        assert r <= len(s)
         cores.append(u[:, :r].reshape(left, 2, r))
         remaining, left = s[:r, None]*vh[:r], r
     cores.append(remaining.reshape(left, 2, 1))
@@ -37,7 +59,7 @@ def tt_svd(a, chi):
     bonds = [1] + [c.shape[2] for c in cores]
     stored = sum(c.size for c in cores)
     assert stored == sum(2*l*r for l,r in zip(bonds[:-1], bonds[1:]))
-    assert bonds == [1]+[min(chi, 2**k, 2**(n-k)) for k in range(1,n)]+[1]
+    assert bonds == (profile if profile is not None else [1]+[min(chi, 2**k, 2**(n-k)) for k in range(1,n)]+[1])
     return reconstructed, stored, bonds
 
 def metric(reference, reconstructed, stored):
@@ -63,26 +85,31 @@ def main():
     a = np.asarray(Image.open(SOURCE).convert('L').resize((SIZE,SIZE),Image.Resampling.LANCZOS),dtype=np.float64)/255
     u,s,vh=svd(a,full_matrices=False,check_finite=False)
     frames, arrays=[],[]
+    profiles={}; floor=None
+    for nominal in sorted(CHIS):
+        ranks,budget=matched_profile(nominal,floor)
+        assert ranks is not None
+        if floor:assert all(b >= a for a,b in zip(floor,ranks))
+        profiles[nominal]=ranks;floor=ranks
     for chi in CHIS:
-        m,stored,bonds=tt_svd(a,chi)
+        m,stored,bonds=tt_svd(a,chi,profiles[chi])
         # Absorb singular values into the right factor: r*(m+n) scalars, no extra Sigma.
         r=int(np.ceil(stored/(2*SIZE)))
         z=(u[:,:r]*s[:r])@vh[:r]
         sm=metric(a,z,r*2*SIZE); tm=metric(a,m,stored)
-        assert sm['stored'] >= tm['stored']
+        assert sm['stored'] == tm['stored']
+        assert sm['cr'] == tm['cr']
         assert abs(sm['relativeError']-np.linalg.norm(s[r:])/np.linalg.norm(a))<1e-12
-        frames.append({'chi':chi,'rank':r,'bonds':bonds,'svd':sm,'mps':tm})
+        frames.append({'chi':max(bonds),'nominalBond':chi,'rank':r,'bonds':bonds,'svd':sm,'mps':tm})
         arrays.append((z,m))
     # Nontruncated TT-SVD must reproduce the image, independently of the selected budgets.
     exact,_,_=tt_svd(a,SIZE)
     assert np.linalg.norm(a-exact)/np.linalg.norm(a)<1e-12
     max_error=float(max(np.abs(x-a).max() for pair in arrays for x in pair))
-    atlas=Image.new('RGB',(2*SIZE,(1+2*len(frames))*SIZE),(244,240,248))
+    atlas=Image.new('RGB',(2*SIZE,(1+len(frames))*SIZE),(244,240,248))
     atlas.paste(grayscale(a),(0,0))
     for i,(z,m) in enumerate(arrays):
-        for col,x in enumerate((z,m)):
-            atlas.paste(grayscale(x),(col*SIZE,(1+i)*SIZE))
-            atlas.paste(error_rgb(np.abs(x-a),max_error),(col*SIZE,(1+len(frames)+i)*SIZE))
+        atlas.paste(grayscale(m),(SIZE,(1+i)*SIZE))
     atlas.save(ROOT/'compression-atlas.png',optimize=True)
     result={'versions':{'numpy':np.__version__,'scipy':scipy.__version__,'Pillow':PIL.__version__},'size':SIZE,'sites':16,'precision':'float64','defaultIndex':CHIS.index(8),
             'errorMaximum':max_error,'sourceSha256':hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
@@ -90,6 +117,6 @@ def main():
     (ROOT/'compression-data.js').write_text('window.COMPRESSION_DATA = '+json.dumps(result,separators=(',',':'))+';\n')
     for f in frames:
         print(f"chi={f['chi']:2}, MPS CR={f['mps']['cr']:.2f}, SVD CR={f['svd']['cr']:.2f}, errors={f['mps']['relativeError']:.5f}/{f['svd']['relativeError']:.5f}")
-    print('PASS: exact TT reconstruction, bond storage identity, predicted ranks, SVD tail errors, and conservative SVD budgets.')
+    print('PASS: exact TT reconstruction, bond storage identity, predicted ranks, SVD tail errors, and exactly equal budgets and nested bond profiles.')
 
 if __name__=='__main__':main()

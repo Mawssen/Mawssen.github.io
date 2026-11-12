@@ -4,34 +4,38 @@ Personal portfolio: https://mawssen.github.io/
 
 A buildless, responsive static site. Publish this folder at the root of `Mawssen/Mawssen.github.io`; GitHub Pages serves `main` from `/ (root)`. No third-party JavaScript, fonts, trackers, or runtime dependencies.
 
-## Interactive SVD / MPS comparison
+## Interactive MPS comparison
 
-The comparison uses scikit-image's **camera** photograph, released under CC0 by photographer Lav Varshney. The original 512 × 512 image is included as `camera-source.png`; source and license: https://scikit-image.org/docs/stable/api/skimage.data.html#skimage.data.camera
+The page shows only the original photograph, its Matrix Product State (MPS) reconstruction, a compression slider, a rank-aware MPS schematic, and one measured error-comparison sentence.
 
-The image was selected after measuring several standard images, with the user's explicit approval to select a favorable example. This is an image-compression demonstration, not DNS or a result reported in the paper. The full least-to-most-compressed range includes a slight SVD win at its least-compressed setting.
+Image: scikit-image's **camera** photograph, CC0 by Lav Varshney. The original 512 × 512 image is included as `camera-source.png`. Source and license: https://scikit-image.org/docs/stable/api/skimage.data.html#skimage.data.camera
+
+This image was selected with the user's approval after measuring several standard images. This is a selected image benchmark, not DNS, a universal claim about MPS, or a result reported in the paper.
 
 ### Reproduce
 
-Install Python dependencies `numpy`, `scipy`, and `Pillow`, then run:
+Requires Python, NumPy, SciPy, and Pillow:
 
 ```sh
 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python build-comparison.py
 ```
 
-The script uses the included source image and produces `compression-atlas.png` and `compression-data.js`. The browser uses `compression.js` to select genuine precomputed reconstructions; it does not interpolate or fabricate numerical results. Source-image SHA-256 is included in the results file.
+The script builds `compression-atlas.png` and `compression-data.js` from the included image. The browser selects genuine precomputed reconstructions without interpolating image data or metrics. Package versions and the source SHA-256 are in the results file.
 
-### Numerical definitions
+### Equal compression ratios
 
-- Downsample once, 512 × 512 → 256 × 256, using Pillow's Lanczos filter; convert intensities to float64 in [0,1].
-- Matrix SVD: compress the 256 × 256 image matrix; absorb singular values into one factor. Stored scalar count = `r * (256 + 256)`.
-- MPS / TT-SVD: tensorize into 16 physical dimensions of size 2, ordered row-bit 1, column-bit 1, row-bit 2, column-bit 2, … from most significant/coarsest to least significant/finest. Use fixed maximum bond dimension χ, with rank limits at the boundaries.
-- Exact core storage = `sum(2 * chi[k-1] * chi[k])`, with boundary dimensions 1. CR = `65536 / stored` in both cases. See Eq. (2.9): https://arxiv.org/pdf/2608.28869#page=8
-- For each MPS budget choose `r = ceil(MPS stored / 512)`: SVD has equal or more stored scalars. Show the two actual CRs separately.
-- Relative error = Frobenius norm of the residual / Frobenius norm of the original. Infidelity is also stored in the numerical results, following Eq. (2.11).
-- Metrics use unclipped float64 arrays. Grayscale renderings are clipped to [0,1] and quantized only for display. Absolute error maps use one shared maximum across all frames and methods.
-- CR describes numerical model storage, not PNG delivery size. These are fixed maximum-bond results, separate from the paper's adaptive-cutoff DNS experiments.
+Both representations store **exactly the same number of float64 scalars at every setting**. The image is downsampled once to 256 × 256 using Lanczos, then normalized to [0,1].
 
-The generator verifies nontruncated MPS reconstruction to relative error < 1e-12, the exact core-count identity and fixed-rank envelopes, SVD residuals against singular-value tails, and conservative SVD storage budgets.
+- Matrix SVD operates on the 256 × 256 image matrix. Singular values are absorbed into one factor, so the stored count is `r * (256 + 256)`.
+- MPS uses 16 physical dimensions of size 2. Row and column bits are interleaved coarse to fine. Exact core storage is `sum(2 * chi[k-1] * chi[k])`, with boundary dimensions 1, following Eq. (2.9): https://arxiv.org/pdf/2608.28869#page=8
+- CR is `65536 / stored` for both methods. Relative error is the Frobenius norm of the residual divided by the Frobenius norm of the original.
+- Rather than rounded, nearly equal budgets, this revision uses deterministic bond-rank profiles whose core counts are exact multiples of 512. The profile search begins from capped-rank envelopes and adjusts two bonds to match the matrix storage budget, subject to valid neighboring-rank constraints.
+- Profiles are nested componentwise: moving toward more compression never increases any bond rank. All actual retained ranks are stored in the results file. These profiles are not uniform-chi approximations or the paper's adaptive-cutoff DNS results.
+- The displayed MPS bond widths are `0.8 + 10 * retained_rank / global_maximum_rank`. Boundary and physical legs keep their proper topology; widths are visual encodings of the bond dimensions.
+- Metrics use unclipped float64 arrays; images share the same [0,1] grayscale, clipped and quantized only for display. CR describes numerical storage, not PNG download size.
+- The sentence on the page reports `100 * (1 - MPS_error / SVD_error)` when MPS wins, and correctly reports the opposite result if SVD wins. No outcome is hard-coded.
+
+The generator checks exact untruncated TT-SVD reconstruction (< 1e-12 relative error), core storage, validity and nesting of bond profiles, matrix-SVD singular-value tails, and exactly equal storage/CR.
 
 ## Publications and presentations
 
