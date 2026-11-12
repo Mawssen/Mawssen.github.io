@@ -6,7 +6,7 @@
   <meta name="description" content="Massen Esmaeili — PhD researcher at the University of Pittsburgh working on tensor networks, computational turbulence, and quantum computing.">
   <meta name="theme-color" content="#2d193f">
   <title>Massen Esmaeili | Computational Science</title>
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=4">
   <link rel="icon" href="favicon.svg?v=2" type="image/svg+xml">
 </head>
 <body>
@@ -25,29 +25,34 @@
         <p class="me-note" id="me"><span class="me-symbol">ME</span><span><strong>M</strong>assen <strong>E</strong>smaeili<br><strong>M</strong>echanical <strong>E</strong>ngineering<br><em>And simply, me.</em></span></p>
         <div class="actions"><a class="button" href="mailto:moe32@pitt.edu">Get in touch <span aria-hidden="true">↗</span></a><a class="text-link" href="https://scholar.google.com/citations?user=sxSTEvYAAAAJ&amp;hl=en">Google Scholar ↗</a></div>
       </div>
-      <figure class="network">
-        <svg viewBox="0 0 540 390" role="img" aria-labelledby="diagram-title diagram-desc">
-          <title id="diagram-title">Open-boundary matrix product state factorization</title>
-          <desc id="diagram-desc">A five-index tensor f is approximated by five tensors A one through A five in a chain. Each A has one open physical index i. Four internal bonds alpha one through alpha four are summed over. Boundary tensors have two legs; interior tensors have three.</desc>
-          <text class="diagram-heading" x="28" y="28">A FIELD, FACTORIZED.</text>
-          <g class="tensor-lines"><path d="M170 88V130 M220 88V130 M270 88V130 M320 88V130 M370 88V130"/></g>
-          <rect class="tensor-node" x="144" y="51" width="252" height="42" rx="2"/>
-          <text class="tensor-text" x="270" y="79">f</text>
-          <g class="index-text"><text x="170" y="150">i₁</text><text x="220" y="150">i₂</text><text x="270" y="150">i₃</text><text x="320" y="150">i₄</text><text x="370" y="150">i₅</text></g>
-          <path class="decomposition-arrow" d="M270 166V205 M264 198L270 205L276 198"/>
-          <text class="diagram-label" x="288" y="191">successive truncated SVDs</text>
-          <g class="tensor-lines"><path d="M65 266H475 M65 266V322 M167.5 266V322 M270 266V322 M372.5 266V322 M475 266V322"/></g>
-          <g class="bond-text"><text x="116" y="246">α₁</text><text x="219" y="246">α₂</text><text x="321" y="246">α₃</text><text x="424" y="246">α₄</text></g>
-          <g class="tensor-node"><rect x="43" y="247" width="44" height="38" rx="2"/><rect x="145.5" y="247" width="44" height="38" rx="2"/><rect x="248" y="247" width="44" height="38" rx="2"/><rect x="350.5" y="247" width="44" height="38" rx="2"/><rect x="453" y="247" width="44" height="38" rx="2"/></g>
-          <g class="tensor-text"><text x="65" y="272">A¹</text><text x="167.5" y="272">A²</text><text x="270" y="272">A³</text><text x="372.5" y="272">A⁴</text><text x="475" y="272">A⁵</text></g>
-          <g class="index-text"><text x="65" y="344">i₁</text><text x="167.5" y="344">i₂</text><text x="270" y="344">i₃</text><text x="372.5" y="344">i₄</text><text x="475" y="344">i₅</text></g>
-          <text class="diagram-label" x="28" y="381">Open legs: physical indices iₖ · Joined legs: contracted indices αₖ</text>
-        </svg>
-        <div class="mps-equation" aria-label="f with indices i one through i five is approximately the sum over alpha one through alpha four of A one through A five contracted along those alpha indices">
-          f<sub>i₁i₂i₃i₄i₅</sub> ≈ ∑<sub>α₁…α₄</sub> A¹<sub>i₁α₁</sub> A²<sub>α₁i₂α₂</sub> A³<sub>α₂i₃α₃</sub> A⁴<sub>α₃i₄α₄</sub> A⁵<sub>α₄i₅</sub>
+      <section class="compression-lab" aria-labelledby="lab-heading">
+        <p class="eyebrow">Interactive / 2D image compression</p>
+        <h2 id="lab-heading">Compression, in view.</h2>
+        <p class="lab-intro">Move the slider to see which details survive. Same image. Two representations.</p>
+        <div class="lab-images">
+          <figure><figcaption>Original <span>256 × 256</span></figcaption><canvas id="original-canvas" width="256" height="256" role="img" aria-label="Original camera photograph"></canvas><p class="image-metric">65,536 values<br><span>Reference image</span></p></figure>
+          <figure><figcaption>Matrix SVD <span id="svd-rank">rank 3</span></figcaption><canvas id="svd-canvas" width="256" height="256" role="img" aria-label="Truncated matrix SVD reconstruction"></canvas><p class="image-metric"><strong id="svd-cr">42.7× CR</strong><br><span id="svd-error">21.52% error</span></p></figure>
+          <figure class="mps-panel"><figcaption>MPS <span id="mps-chi">χ = 8</span></figcaption><canvas id="mps-canvas" width="256" height="256" role="img" aria-label="Matrix product state reconstruction"></canvas><p class="image-metric"><strong id="mps-cr">45.3× CR</strong><br><span id="mps-error">16.12% error</span></p></figure>
         </div>
-        <figcaption><span>Matrix product state / tensor train</span><span class="diagram-explanation">Five-site, open-boundary example. Bond dimensions control the retained rank.</span></figcaption>
-      </figure>
+        <div class="compression-control"><label for="compression-slider">Compression ratio <span>(MPS)</span></label><output id="compression-value" for="compression-slider">45.3×</output></div>
+        <div class="slider-row"><button id="compression-less" type="button" aria-label="Less compression" disabled>−</button><input id="compression-slider" type="range" min="0" max="8" step="1" value="6" aria-describedby="slider-help" disabled><button id="compression-more" type="button" aria-label="More compression" disabled>+</button></div>
+        <p id="slider-help" class="slider-help"><span>More detail · 4.4×</span><span>Less storage · 154.6×</span></p>
+        <div class="lab-toolbar"><button id="compression-play" type="button" aria-pressed="false" disabled>Play comparison</button><button id="compression-reset" type="button" disabled>Reset</button><label class="error-toggle"><input id="show-errors" type="checkbox" disabled> Show error maps</label></div>
+        <p id="error-scale" class="error-scale" hidden>Absolute error · shared scale <span class="error-gradient" aria-hidden="true"></span><span id="error-scale-text"></span></p>
+        <p id="compression-outcome" class="compression-outcome" aria-live="polite">Loading measured reconstructions…</p>
+        <p class="lab-caption">Selected example: <a href="https://scikit-image.org/docs/stable/api/skimage.data.html#skimage.data.camera">“Camera” photograph</a>, CC0 / Lav Varshney. An image benchmark, not a flow simulation.</p>
+        <details class="lab-methods"><summary>How the comparison works</summary>
+          <p>Both methods compress the same 256 × 256 grayscale image. MPS uses 16 binary sites, with row and column bits interleaved from coarse to fine, and a fixed maximum bond dimension χ. Its boundary bonds have dimension 1.</p>
+          <p><strong>CR = 65,536 ÷ stored values.</strong> MPS stores ∑ 2χ<sub>k−1</sub>χ<sub>k</sub> values, following <a href="https://arxiv.org/pdf/2608.28869#page=8">Eq. (2.9) of my paper</a>. Matrix SVD stores two factors with the singular values absorbed into one: r(256 + 256) values.</p>
+          <p>Ranks are discrete. At each slider step, SVD gets the smallest rank with <em>at least</em> the MPS storage budget. Actual CRs are shown separately; this gives SVD equal or more storage.</p>
+          <p id="storage-detail"></p>
+          <p>Error means ‖reconstruction − original‖<sub>F</sub> / ‖original‖<sub>F</sub>. Measurements use unclipped float64 arrays; all displayed reconstructions share the [0, 1] grayscale. Error maps also share one fixed scale across all slider positions.</p>
+          <p>The original 512 × 512 photo is downsampled once with Lanczos. These are genuine, precomputed SVD and TT-SVD reconstructions; the slider selects them without interpolation. CR counts model storage in the same precision, not downloaded PNG sizes.</p>
+          <p>This photo was selected because MPS wins across several budgets. SVD narrowly wins at the least-compressed setting; neither method is universally superior. These demo results are separate from the paper’s DNS results.</p>
+          <p><a href="build-comparison.py" download>Reproduce the calculation</a> · <a href="camera-source.png" download>Source image</a> · <a href="compression-data.js" download>Numerical results</a></p>
+        </details>
+        <noscript><p>Enable JavaScript to use the comparison. <a href="camera-source.png">View the source photograph.</a></p></noscript>
+      </section>
     </section>
     <section class="section wrap" id="research">
       <div class="section-heading"><p class="eyebrow">01 / Research</p><h2>Where physics meets<br>efficient computation.</h2></div>
@@ -64,11 +69,11 @@
     <section class="section wrap presentations-section" id="presentations">
       <div class="section-heading"><p class="eyebrow">03 / Presentations &amp; conferences</p><h2>Sharing the work.</h2><p class="section-intro">Conference contributions in tensor networks, turbulent flows, and quantum simulation.</p></div>
       <div class="talks">
-        <article class="talk"><p class="metadata">November 22–24, 2026 · Upcoming</p><h3>Tensor Networks for Reduced-Order Modeling of a Turbulent Jet Flame</h3><p class="talk-authors"><strong>Massen Esmaeili</strong>, Kang Wang, et al.</p><p>79th APS Division of Fluid Dynamics Annual Meeting · Orlando, FL</p><a class="text-link" href="https://dfd-meeting.aps.org/schedule/">Conference program ↗</a></article>
-        <article class="talk"><p class="metadata">November 22–24, 2026 · Upcoming · Coauthored contribution</p><h3>Cross-Platform Comparison of Quantum Hardware for Simulation of the Advection-Diffusion Equation</h3><p class="talk-authors">Daniel Madrid, <strong>Massen Esmaeili</strong>, et al.</p><p>79th APS Division of Fluid Dynamics Annual Meeting · Orlando, FL</p><a class="text-link" href="https://dfd-meeting.aps.org/schedule/">Conference program ↗</a></article>
-        <article class="talk"><p class="metadata">October 23, 2026</p><h3>Low-Rank Tensor Network Ansätze for Reduced-Order Modeling of a Non-Premixed Turbulent Flame</h3><p class="talk-authors"><strong>Massen Esmaeili</strong>, Kang Wang, Hirad Alipanah, et al.</p><p>New York–New Jersey–Pennsylvania Section of SIAM Annual Meeting</p><a class="text-link" href="https://engage.siam.org/events/event-description?CalendarEventKey=fc97b6a6-4ab9-4f71-9bc8-019f977f07a1">Conference details ↗</a></article>
-        <article class="talk"><p class="metadata">July 2026 · Coauthored contribution</p><h3>Matrix Product State for Computational Turbulent Scalar Mixing and Reaction</h3><p class="talk-authors">Robert Pinkston, <strong>Massen Esmaeili</strong>, Hirad Alipanah, Nikita Gourianov, Dieter Jaksch, Daniel Livescu, Andrew Daley, Peyman Givi, and Juan José Mendoza-Arenas</p><p>WCCM–ECCOMAS 2026 · Munich, Germany</p><a class="text-link" href="https://wccm-eccomas2026.org/event/contribution/b455601d-055a-11f1-919d-000c29ddfc0c">Conference abstract ↗</a></article>
-        <article class="talk"><p class="metadata">November 23, 2025 · Oral presentation</p><h3>A priori Assessment of Tensor Networks Encoding for Reduced Order Modeling of Isotropic Turbulence</h3><p class="talk-authors"><strong>Massen Esmaeili</strong>, Hirad Alipanah, Robert Pinkston, Peyman Givi, Daniel Livescu, Dieter Jaksch, and Juan José Mendoza-Arenas</p><p>78th APS Division of Fluid Dynamics Annual Meeting · Houston, TX</p><a class="text-link" href="https://meetings-archive.aps.org/dfd/2025/j26/1/">Talk abstract ↗</a></article>
+        <article class="talk talk-compact"><p class="metadata">2026 · APS DFD</p><h3><a href="https://dfd-meeting.aps.org/dfd/2026/events/B17/16">Tensor Networks for Reduced-Order Modeling of a Turbulent Jet Flame</a></h3></article>
+        <article class="talk talk-compact"><p class="metadata">2026 · APS DFD</p><h3><a href="https://dfd-meeting.aps.org/dfd/2026/events/A15/11">Cross-Platform Comparison of Quantum Hardware for Simulation of the Advection–Diffusion Equation</a></h3></article>
+        <article class="talk talk-compact"><p class="metadata">2026 · SIAM-NNP</p><h3><a href="https://siamnnp2026.sciencesconf.org/data/pages/SIAM_NNP26_program.pdf#page=2">Low-Rank Tensor Network Ansätze for Reduced-Order Modeling of a Non-Premixed Turbulent Flame</a></h3></article>
+        <article class="talk talk-compact"><p class="metadata">2026 · WCCM–ECCOMAS</p><h3><a href="https://wccm-eccomas2026.org/event/contribution/b455601d-055a-11f1-919d-000c29ddfc0c">Matrix Product State for Computational Turbulent Scalar Mixing and Reaction</a></h3></article>
+        <article class="talk talk-compact"><p class="metadata">2025 · APS DFD</p><h3><a href="https://meetings-archive.aps.org/dfd/2025/j26/1/">A Priori Assessment of Tensor Networks Encoding for Reduced-Order Modeling of Isotropic Turbulence</a></h3></article>
       </div>
     </section>
     <section class="section wrap" id="background">
@@ -86,5 +91,7 @@
     <section class="contact-band" id="contact"><div class="wrap contact"><div><p class="eyebrow">05 / Contact</p><h2>Let’s connect.</h2><p>For research conversations and professional opportunities.</p></div><div class="contact-links"><a href="mailto:moe32@pitt.edu">moe32@pitt.edu ↗</a><a href="https://github.com/Mawssen">GitHub ↗</a><a href="https://www.linkedin.com/in/massen-es/">LinkedIn ↗</a><a href="https://scholar.google.com/citations?user=sxSTEvYAAAAJ&amp;hl=en">Google Scholar ↗</a></div></div></section>
   </main>
   <footer class="wrap footer"><span>Massen Esmaeili</span><span>Pittsburgh, Pennsylvania</span><a href="#">Back to top ↑</a></footer>
+  <script src="compression-data.js?v=1"></script>
+  <script src="compression.js?v=1"></script>
 </body>
 </html>
