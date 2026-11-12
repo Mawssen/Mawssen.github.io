@@ -20,18 +20,18 @@
     draw(mps, 1, 1+i);
     const ratio = frame.mps.cr.toFixed(1) + '×';
     document.getElementById('compression-value').textContent = ratio;
-    slider.setAttribute('aria-valuetext', ratio + ' compression');
-    mps.setAttribute('aria-label', 'Matrix Product State reconstruction at ' + ratio + ' compression');
+    slider.setAttribute('aria-valuetext', ratio + ' storage compression');
+    mps.setAttribute('aria-label', 'Matrix Product State reconstruction at ' + ratio + ' storage compression');
     for (let k=0;k<data.sites-1;k++) {
       document.getElementById('mps-bond-'+k).setAttribute('stroke-width', (0.8 + 10*frame.bonds[k+1]/maximumBond).toFixed(3));
     }
     // Both methods store exactly the same number of float64 values at every setting.
     const difference = 100 * (1-frame.mps.relativeError/frame.svd.relativeError);
     if (difference >= 0) {
-      outcome.textContent = 'At the same compression ratio, MPS has ' + difference.toFixed(1) + '% lower error than Singular Value Decomposition (SVD).';
+      outcome.textContent = 'At the same storage compression, MPS has ' + difference.toFixed(1) + '% lower error than Singular Value Decomposition (SVD).';
     } else {
       const svdBenefit = 100 * (1-frame.svd.relativeError/frame.mps.relativeError);
-      outcome.textContent = 'At the same compression ratio, Singular Value Decomposition (SVD) has ' + svdBenefit.toFixed(1) + '% lower error than MPS.';
+      outcome.textContent = 'At the same storage compression, Singular Value Decomposition (SVD) has ' + svdBenefit.toFixed(1) + '% lower error than MPS.';
     }
   }
   slider.addEventListener('input', update);
