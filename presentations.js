@@ -2,51 +2,42 @@
   const carousel = document.querySelector('.presentation-carousel');
   if (!carousel) return;
   const slides = [...carousel.querySelectorAll('.presentation-slide')];
-  const stage = carousel.querySelector('.presentation-stage');
+  const dots = [...carousel.querySelectorAll('.presentation-dot')];
   const previous = carousel.querySelector('.previous');
   const next = carousel.querySelector('.next');
-  const pause = carousel.querySelector('.presentation-pause');
-  const position = carousel.querySelector('.presentation-position');
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let current = 0, timer, transition, paused = motion.matches, hovered = false, focused = false;
+  let current = 0, timer, transition, readingLink = false;
   const schedule = () => {
     clearTimeout(timer);
-    if (!paused && !hovered && !focused && !document.hidden) timer = setTimeout(() => show(1), 6500);
+    if (!readingLink && !document.hidden) timer = setTimeout(() => show(current + 1), 3000);
   };
-  const updatePause = () => {
-    pause.textContent = paused ? 'Play ▷' : 'Pause Ⅱ';
-    pause.setAttribute('aria-label', `${paused ? 'Start' : 'Pause'} automatic presentation slides`);
-    stage.setAttribute('aria-live', paused ? 'polite' : 'off');
-  };
-  const show = direction => {
+  const show = target => {
     clearTimeout(timer);
     clearTimeout(transition);
+    target = (target + slides.length) % slides.length;
     slides.forEach((slide, i) => { slide.hidden = i !== current; slide.classList.remove('is-entering', 'is-leaving'); });
     const outgoing = slides[current];
     const finish = () => {
       outgoing.hidden = true;
       outgoing.classList.remove('is-leaving');
-      current = (current + direction + slides.length) % slides.length;
+      current = target;
       slides[current].hidden = false;
       slides[current].classList.add('is-entering');
-      position.textContent = `${current + 1} / ${slides.length}`;
-      position.setAttribute('aria-label', `Presentation ${current + 1} of ${slides.length}`);
+      dots.forEach((dot, i) => dot.setAttribute('aria-current', String(i === current)));
       schedule();
     };
+    if (target === current) { schedule(); return; }
     if (motion.matches) finish();
-    else { outgoing.classList.add('is-leaving'); transition = setTimeout(finish, 220); }
+    else { outgoing.classList.add('is-leaving'); transition = setTimeout(finish, 180); }
   };
   previous.hidden = next.hidden = false;
-  carousel.querySelector('.presentation-controls').hidden = false;
-  previous.addEventListener('click', () => show(-1));
-  next.addEventListener('click', () => show(1));
-  pause.addEventListener('click', () => { paused = !paused; updatePause(); schedule(); });
-  carousel.addEventListener('mouseenter', () => { hovered = true; schedule(); });
-  carousel.addEventListener('mouseleave', () => { hovered = false; schedule(); });
-  carousel.addEventListener('focusin', () => { focused = true; schedule(); });
-  carousel.addEventListener('focusout', event => { focused = carousel.contains(event.relatedTarget); schedule(); });
+  carousel.querySelector('.presentation-dots').hidden = false;
+  previous.addEventListener('click', () => show(current - 1));
+  next.addEventListener('click', () => show(current + 1));
+  dots.forEach((dot, i) => dot.addEventListener('click', () => show(i)));
+  // Keep links still for keyboard readers; hovering the carousel no longer stops rotation.
+  carousel.addEventListener('focusin', event => { readingLink = event.target.matches('a'); schedule(); });
+  carousel.addEventListener('focusout', event => { readingLink = !!event.relatedTarget && carousel.contains(event.relatedTarget) && event.relatedTarget.matches('a'); schedule(); });
   document.addEventListener('visibilitychange', schedule);
-  motion.addEventListener('change', () => { if (motion.matches) paused = true; updatePause(); schedule(); });
-  updatePause();
   schedule();
 })();
