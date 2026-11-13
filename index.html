@@ -6,7 +6,7 @@
   <meta name="description" content="Massen Esmaeili — PhD researcher at the University of Pittsburgh working on tensor networks, computational turbulence, and quantum computing.">
   <meta name="theme-color" content="#2d193f">
   <title>Massen Esmaeili | Computational Science</title>
-  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="styles.css?v=12">
   <link rel="icon" href="favicon.svg?v=2" type="image/svg+xml">
 </head>
 <body>
@@ -41,7 +41,37 @@
       </section>
     </section>
     <section class="section wrap" id="research">
-      <div class="section-heading"><p class="eyebrow">Research</p><h2>Where physics meets<br>efficient computation.</h2></div>
+      <div class="section-heading"><p class="eyebrow">Research</p><h2>Where physics meets<br>efficient computation.</h2>
+        <aside class="quantum-cat" id="quantum-cat" data-state="superposition" aria-labelledby="cat-title">
+          <h3 id="cat-title">Schrödinger's Cat</h3>
+          <div class="cat-stage" role="img" aria-label="Two overlapping cats: a happy cat in a calm hot tub and the same unharmed cat with swirly eyes in a playful vortex.">
+            <svg class="cat-scene cat-alive" viewBox="0 0 320 190" aria-hidden="true" focusable="false">
+              <ellipse cx="160" cy="172" rx="117" ry="8" fill="#d8cde1"/>
+              <g fill="none" stroke="#a99ab8" stroke-width="2" stroke-linecap="round"><path d="M116 63q-10-12 0-24t0-20M160 55q-10-12 0-24M204 63q-10-12 0-24t0-20"/></g>
+              <path d="M64 117h192l-14 43q-82 20-164 0Z" fill="#d8cde1" stroke="#6a5977" stroke-width="2"/>
+              <ellipse cx="160" cy="117" rx="96" ry="24" fill="#e5ed9b" stroke="#6a5977" stroke-width="2"/>
+              <g fill="none" stroke="#79375e" stroke-width="2" stroke-linecap="round"><path d="M84 125q76 14 152 0M94 134q66 10 132 0"/></g>
+              <g fill="#ead9c8" stroke="#53306b" stroke-width="2.5" stroke-linejoin="round"><path d="M121 109q-3-37 39-37t39 37"/><path d="M124 73l-3-32 25 17q14-5 28 0l25-17-3 32q13 43-36 43t-36-43Z"/><ellipse cx="119" cy="112" rx="15" ry="7"/><ellipse cx="201" cy="112" rx="15" ry="7"/></g>
+              <g fill="none" stroke="#79375e" stroke-width="2.5" stroke-linecap="round"><path d="M139 78q6-7 12 0M170 78q6-7 12 0M150 95q10 12 20 0M128 88l-16-3m17 10-17 3m80-10 16-3m-17 10 17 3"/></g><path d="m155 86 5 5 5-5Z" fill="#79375e"/>
+            </svg>
+            <svg class="cat-scene cat-dizzy" viewBox="0 0 320 190" aria-hidden="true" focusable="false">
+              <ellipse cx="160" cy="172" rx="117" ry="8" fill="#d8cde1"/>
+              <g fill="none" stroke="#79375e" stroke-width="2.5" stroke-linecap="round"><path d="M81 74C-2 138 264 196 266 116c2-32-67-51-116-40S96 126 169 139s129-9 112-47M75 116c-22-46 114-83 173-26M94 151q75 29 144-5"/><path d="m272 91 10-1 2 10M88 65l-8 9 12 3"/></g>
+              <g transform="rotate(-18 160 94)">
+                <path d="M132 107q-20 44 23 42t34-39M186 137q43 8 32-14q-9-13-18 0" fill="#ead9c8" stroke="#53306b" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M124 73l-3-32 25 17q14-5 28 0l25-17-3 32q13 43-36 43t-36-43Z" fill="#ead9c8" stroke="#53306b" stroke-width="2.5" stroke-linejoin="round"/>
+                <g fill="none" stroke="#79375e" stroke-width="2.3" stroke-linecap="round"><path d="M145 81c-8 2-9-10-1-12s14 10 6 16-20-1-17-12M177 81c-8 2-9-10-1-12s14 10 6 16-20-1-17-12M152 98q8 7 16 0M128 88l-16-3m17 10-17 3m80-10 16-3m-17 10 17 3"/></g><path d="m155 88 5 5 5-5Z" fill="#79375e"/>
+              </g>
+              <g fill="#79375e"><path d="m234 34 2 7 7 2-7 2-2 7-2-7-7-2 7-2ZM91 40l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></g>
+            </svg>
+          </div>
+          <p class="cat-state" id="cat-state" role="status" aria-live="polite" aria-atomic="true">State: superposition</p>
+          <button class="button cat-observe" type="button" aria-controls="cat-state" hidden>Observe</button>
+          <noscript><p>Enable JavaScript to observe and reset the cats.</p></noscript>
+          <p class="cat-counter">Alive: 0 · Dizzy: 0</p>
+          <p class="cat-footer">In quantum mechanics, you only see the outcome once you measure.</p>
+        </aside>
+      </div>
       <div class="research-list">
         <article><span class="number">01</span><div><h3>Tensor networks &amp; reduced-order modeling</h3><p>Studying low-rank representations of turbulent fields using tensor-network methods, including matrix product states, to understand how physical information is retained under compression.</p></div></article>
         <article><span class="number">02</span><div><h3>Computational turbulence</h3><p>Working with direct numerical simulation data and flow statistics, with research spanning isotropic turbulence and turbulent reacting flows.</p></div></article>
@@ -113,6 +143,7 @@
   <script src="compression.js?v=4"></script>
   <script src="presentations.js?v=2"></script>
   <script src="research.js?v=1"></script>
+  <script src="quantum-cat.js?v=1"></script>
   <script src="easter-eggs.js?v=1"></script>
 </body>
 </html>
