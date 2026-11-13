@@ -8,6 +8,7 @@
   const original = document.getElementById('original-canvas');
   const mps = document.getElementById('mps-canvas');
   const maximumBond = Math.max(...data.frames.flatMap(frame => frame.bonds));
+  const portraitLabel = document.getElementById('massen-label');
   let ready = false;
   function draw(canvas, col, row) {
     canvas.getContext('2d').drawImage(atlas, col*data.size, row*data.size, data.size, data.size, 0, 0, data.size, data.size);
@@ -18,14 +19,19 @@
     const frame = data.frames[i];
     draw(original, 0, 0);
     draw(mps, 1, 1+i);
-    const ratio = frame.mps.cr.toFixed(1) + '×';
+    const ratio = frame.storage.cr.toFixed(frame.storage.cr === 1 ? 0 : 1) + '×';
+    portraitLabel.textContent = frame.label;
     document.getElementById('compression-value').textContent = ratio;
-    slider.setAttribute('aria-valuetext', ratio + ' storage compression');
-    mps.setAttribute('aria-label', 'Matrix Product State reconstruction at ' + ratio + ' storage compression');
+    slider.setAttribute('aria-valuetext', frame.label + ', ' + ratio + ' storage compression');
+    mps.setAttribute('aria-label', frame.mode === 'reference' ? 'Full-resolution Massen: uncompressed 256 by 256 grayscale headshot' : frame.label + ': Matrix Product State reconstruction at ' + ratio + ' storage compression');
     for (let k=0;k<data.sites-1;k++) {
-      document.getElementById('mps-bond-'+k).setAttribute('stroke-width', (0.8 + 10*frame.bonds[k+1]/maximumBond).toFixed(3));
+      document.getElementById('mps-bond-'+k).setAttribute('stroke-width', (0.8 + 10*Math.log2(frame.bonds[k+1]+1)/Math.log2(maximumBond+1)).toFixed(3));
     }
-    // Both methods store exactly the same number of float64 values at every setting.
+    // Full resolution is the raw 256px reference, not an MPS storage claim.
+    // At the strongest truncations, even a rank-1 matrix SVD exceeds the MPS budget.
+    outcome.hidden = !frame.svd;
+    if (!frame.svd) { outcome.textContent = ''; return; }
+    // Every displayed comparison uses exactly equal float64 storage budgets.
     const difference = 100 * (1-frame.mps.relativeError/frame.svd.relativeError);
     if (difference >= 0) {
       outcome.textContent = 'At the same storage compression, MPS has ' + difference.toFixed(1) + '% lower error than Singular Value Decomposition (SVD).';
@@ -42,6 +48,6 @@
     slider.disabled = false;
     update();
   };
-  atlas.onerror = () => { outcome.textContent = 'The comparison images could not load. Please reload.'; };
-  atlas.src = 'compression-atlas.png?v=2';
+  atlas.onerror = () => { outcome.hidden = false; outcome.textContent = 'The headshot images could not load. Please reload.'; };
+  atlas.src = 'compression-atlas.png?v=3';
 })();
